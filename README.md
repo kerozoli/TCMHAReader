@@ -6,26 +6,19 @@ A custom integration for Home Assistant that polls the `Diagnostics.asp` page of
 
 The integration creates sensors automatically based on the tables found on the diagnostics page. Typical sensors include:
 
-- **Aggregates**
+- **Downstream aggregates**
+  - `Downstream channel count`
   - `Downstream locked channels`
+  - `Downstream average SNR` (only when the modem reports SNR)
+  - `Downstream average power` (only when the modem reports power)
+  - `Downstream average BER` (only when the modem reports BER)
   - `Downstream corrected codewords` (only when the modem reports them)
   - `Downstream uncorrected codewords` (only when the modem reports them)
-  - `Downstream average SNR` (only when the modem reports SNR)
 
-- **Per downstream channel**
-  - Power level (dBmV)
-  - SNR (dB)
-  - BER (%)
-  - Frequency (MHz)
-  - Corrected / Uncorrected codeword counters (when reported)
-  - Modulation (e.g. 256 QAM)
-  - Lock status (when reported)
-
-- **Per upstream channel**
-  - Power level (dBmV)
-  - Frequency (MHz)
-  - Modulation
-  - Lock status (when reported)
+- **Upstream aggregates**
+  - `Upstream channel count`
+  - `Upstream locked channels`
+  - `Upstream average power` (only when the modem reports power)
 
 The parser understands both "Forward Path"/"Return Path" (Thomson style) and "Downstream"/"Upstream" naming.
 
