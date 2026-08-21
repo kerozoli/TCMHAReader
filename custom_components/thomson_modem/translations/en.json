@@ -1,0 +1,24 @@
+{
+  "title": "Thomson Cable Modem Diagnostics",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to the modem diagnostics page",
+        "description": "Enter the URL of the Thomson cable modem Diagnostics.asp page. Most modems use http://192.168.100.1/Diagnostics.asp without authentication.",
+        "data": {
+          "url": "Diagnostics page URL",
+          "username": "Username (optional)",
+          "password": "Password (optional)",
+          "scan_interval": "Update interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect. Check the URL, username and password.",
+      "no_data": "Connected, but no diagnostic tables were recognized. The page layout may differ from the expected format."
+    },
+    "abort": {
+      "already_configured": "This modem is already configured."
+    }
+  }
+}
