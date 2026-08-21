@@ -21,7 +21,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import ThomsonModemCoordinator
-from .parser import ModemDiagnostics
+from .parser import DownstreamChannel, ModemDiagnostics, UpstreamChannel
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +31,23 @@ class ThomsonSensorDescription(SensorEntityDescription):
     """Class describing Thomson modem sensor entities."""
 
     value_fn: callable
+
+
+def _is_active(channel: DownstreamChannel | UpstreamChannel) -> bool:
+    """Return whether a channel appears active on the diagnostics page.
+
+    Many Thomson pages do not include an explicit lock-status column. In that
+    case we treat every non-placeholder channel row as active.
+    """
+    if channel.lock_status is not None:
+        return _is_locked(channel.lock_status)
+
+    # No lock status available: decide from numeric payload.
+    frequency = getattr(channel, "frequency", None)
+    power = getattr(channel, "power", None)
+    if frequency is not None and frequency == 0 and power is not None and power == 0:
+        return False
+    return frequency is not None or power is not None
 
 
 def _build_sensors(coordinator: ThomsonModemCoordinator) -> list[ThomsonModemSensor]:
@@ -57,15 +74,27 @@ def _build_sensors(coordinator: ThomsonModemCoordinator) -> list[ThomsonModemSen
         ThomsonModemSensor(
             coordinator,
             ThomsonSensorDescription(
-                key="downstream_locked_count",
-                name="Downstream locked channels",
+                key="downstream_active_count",
+                name="Downstream active channels",
                 state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda d: sum(
-                    1 for ch in d.downstream if _is_locked(ch.lock_status)
-                ),
+                value_fn=lambda d: sum(1 for ch in d.downstream if _is_active(ch)),
             ),
         )
     )
+    if any(ch.lock_status is not None for ch in diagnostics.downstream):
+        entities.append(
+            ThomsonModemSensor(
+                coordinator,
+                ThomsonSensorDescription(
+                    key="downstream_locked_count",
+                    name="Downstream locked channels",
+                    state_class=SensorStateClass.MEASUREMENT,
+                    value_fn=lambda d: sum(
+                        1 for ch in d.downstream if _is_locked(ch.lock_status)
+                    ),
+                ),
+            )
+        )
     if any(ch.corrected is not None for ch in diagnostics.downstream):
         entities.append(
             ThomsonModemSensor(
@@ -160,15 +189,27 @@ def _build_sensors(coordinator: ThomsonModemCoordinator) -> list[ThomsonModemSen
         ThomsonModemSensor(
             coordinator,
             ThomsonSensorDescription(
-                key="upstream_locked_count",
-                name="Upstream locked channels",
+                key="upstream_active_count",
+                name="Upstream active channels",
                 state_class=SensorStateClass.MEASUREMENT,
-                value_fn=lambda d: sum(
-                    1 for ch in d.upstream if _is_locked(ch.lock_status)
-                ),
+                value_fn=lambda d: sum(1 for ch in d.upstream if _is_active(ch)),
             ),
         )
     )
+    if any(ch.lock_status is not None for ch in diagnostics.upstream):
+        entities.append(
+            ThomsonModemSensor(
+                coordinator,
+                ThomsonSensorDescription(
+                    key="upstream_locked_count",
+                    name="Upstream locked channels",
+                    state_class=SensorStateClass.MEASUREMENT,
+                    value_fn=lambda d: sum(
+                        1 for ch in d.upstream if _is_locked(ch.lock_status)
+                    ),
+                ),
+            )
+        )
     if any(ch.power is not None for ch in diagnostics.upstream):
         entities.append(
             ThomsonModemSensor(

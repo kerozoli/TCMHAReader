@@ -7,8 +7,9 @@ A custom integration for Home Assistant that polls the `Diagnostics.asp` page of
 The integration creates sensors automatically based on the tables found on the diagnostics page. Typical sensors include:
 
 - **Downstream aggregates**
-  - `Downstream channel count`
-  - `Downstream locked channels`
+  - `Downstream channel count` — total channels found on the page
+  - `Downstream active channels` — channels with a locked/online status, or all non-placeholder channels when the page has no explicit lock column
+  - `Downstream locked channels` — only created when the modem reports a lock-status column
   - `Downstream average SNR` (only when the modem reports SNR)
   - `Downstream average power` (only when the modem reports power)
   - `Downstream average BER` (only when the modem reports BER)
@@ -16,11 +17,14 @@ The integration creates sensors automatically based on the tables found on the d
   - `Downstream uncorrected codewords` (only when the modem reports them)
 
 - **Upstream aggregates**
-  - `Upstream channel count`
-  - `Upstream locked channels`
+  - `Upstream channel count` — total channels found on the page
+  - `Upstream active channels` — channels with a locked/online status, or all non-placeholder channels when the page has no explicit lock column
+  - `Upstream locked channels` — only created when the modem reports a lock-status column
   - `Upstream average power` (only when the modem reports power)
 
 The parser understands both "Forward Path"/"Return Path" (Thomson style) and "Downstream"/"Upstream" naming.
+
+> **Note:** Many Thomson pages (including the sample `Diagnostics.asp`) do **not** include a lock-status column. In that case `Downstream active channels` / `Upstream active channels` are the sensors to watch for restart alerts.
 
 ## Installation
 
