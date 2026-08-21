@@ -142,10 +142,10 @@ def _is_plausible_data_table(headers: list[str], rows: list[list[str]]) -> bool:
     if any(len(h) > 80 for h in headers):
         return False
 
-    # Data rows should match the header column count.
+    # Data rows should roughly match the header column count (allow merged cells).
     header_count = len(headers)
     matching_rows = sum(1 for row in rows if len(row) == header_count)
-    if matching_rows < len(rows) / 2:
+    if matching_rows == 0:
         return False
 
     # Must contain at least one recognizable diagnostic column.
@@ -163,6 +163,10 @@ def _classify_table(headers: list[str], preceding_text: str = "") -> str | None:
     combined = " ".join(_normalize(h) for h in headers)
     context = _normalize(preceding_text)
 
+    _LOGGER.debug(
+        "Classifying table: headers=%s, context=%s", headers, context[:200]
+    )
+
     if any(hint in context for hint in DOWNSTREAM_HINTS):
         return "downstream"
     if any(hint in context for hint in UPSTREAM_HINTS):
@@ -173,14 +177,21 @@ def _classify_table(headers: list[str], preceding_text: str = "") -> str | None:
     if any(hint in combined for hint in UPSTREAM_HINTS):
         return "upstream"
 
-    # Fallback: look for column mixes typical of each table type.
+    # Column-based fallback.
+    has_channel = _find_column(headers, CHANNEL_ID_ALIASES) is not None
     has_power = _find_column(headers, POWER_ALIASES) is not None
     has_snr = _find_column(headers, SNR_ALIASES) is not None
     has_ber = _find_column(headers, BER_ALIASES) is not None
     has_freq = _find_column(headers, FREQUENCY_ALIASES) is not None
+    has_mod = _find_column(headers, MODULATION_ALIASES) is not None
+
     if has_power and (has_snr or has_ber) and has_freq:
         return "downstream"
-    if has_power and has_freq and has_snr is None and has_ber is None:
+    if has_channel and has_power and has_freq and has_mod and not (has_snr or has_ber):
+        return "upstream"
+    # If we see power+freq but no SNR/BER, treat as upstream unless it has
+    # many columns typical of a downstream table.
+    if has_power and has_freq and not (has_snr or has_ber):
         return "upstream"
     return None
 
@@ -217,6 +228,8 @@ def _extract_table(table: Tag) -> dict[str, Any]:
 def _preceding_text(table: Tag) -> str:
     """Collect nearby text before a table to help classify it."""
     texts: list[str] = []
+
+    # Siblings before the table in the same parent.
     for prev in table.previous_siblings:
         if getattr(prev, "name", None) == "table":
             break
@@ -228,6 +241,18 @@ def _preceding_text(table: Tag) -> str:
             texts.append(text)
             if len(texts) >= 3:
                 break
+
+    # Also look at the immediate parent cell/row for section labels.
+    parent = table.find_parent(["td", "th", "tr", "div"])
+    if parent is not None:
+        parent_text = parent.get_text(strip=True)
+        # Remove the table's own text so we keep only the surrounding labels.
+        table_text = table.get_text(strip=True)
+        if table_text and table_text in parent_text:
+            parent_text = parent_text.replace(table_text, "", 1)
+        if parent_text:
+            texts.append(parent_text)
+
     return " ".join(reversed(texts))
 
 
