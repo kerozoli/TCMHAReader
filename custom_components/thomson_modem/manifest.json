@@ -1,0 +1,13 @@
+{
+  "domain": "thomson_modem",
+  "name": "Thomson Cable Modem Diagnostics",
+  "codeowners": ["@kero"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/kero/TCMHAReader",
+  "iot_class": "local_polling",
+  "requirements": [
+    "beautifulsoup4>=4.11.0"
+  ],
+  "version": "1.0.0"
+}

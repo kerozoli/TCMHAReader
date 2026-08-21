@@ -1,0 +1,7 @@
+{
+  "name": "Thomson Cable Modem Diagnostics",
+  "content_in_root": false,
+  "render_readme": true,
+  "iot_class": "local_polling",
+  "homeassistant": "2024.1.0"
+}
