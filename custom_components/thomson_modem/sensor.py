@@ -237,10 +237,10 @@ def _is_locked(status: str | None) -> bool:
 
 
 def _average(values: list[float]) -> float | None:
-    """Return the average of a list, or None if empty."""
+    """Return the average of a list rounded to 2 decimals, or None if empty."""
     if not values:
         return None
-    return sum(values) / len(values)
+    return round(sum(values) / len(values), 2)
 
 
 async def async_setup_entry(
