@@ -41,6 +41,8 @@ The parser understands both "Forward Path"/"Return Path" (Thomson style) and "Do
 1. Copy the `custom_components/thomson_modem` folder into your Home Assistant `config/custom_components/` directory.
 2. Restart Home Assistant.
 
+> **Note:** The integration's brand icon and logo are bundled in `custom_components/thomson_modem/brand/`. Local brand images require **Home Assistant 2026.3 or newer**; on older versions the integration works but shows a generic icon.
+
 ## Configuration
 
 1. Go to **Settings** → **Devices & services** → **Add integration**.
