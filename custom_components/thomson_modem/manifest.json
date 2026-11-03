@@ -4,10 +4,10 @@
   "codeowners": ["@kero"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/kero/TCMHAReader",
+  "documentation": "https://github.com/kerozoli/TCMHAReader",
   "iot_class": "local_polling",
   "requirements": [
     "beautifulsoup4>=4.11.0"
   ],
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
